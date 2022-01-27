@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 public class Controller : MonoBehaviour
 {
     [SerializeField] float speed;
@@ -12,11 +12,14 @@ public class Controller : MonoBehaviour
     [SerializeField] Transform rocket;
     Camera mCamera;
     [SerializeField] Gradient skyColor;
+
+
     // Start is called before the first frame update
     void Start()
     {
         mainSmoke = smoke.main;
         mCamera = Camera.main;
+        mCamera.backgroundColor = skyColor.Evaluate(0);
     }
 
     // Update is called once per frame
@@ -32,14 +35,18 @@ public class Controller : MonoBehaviour
         {
             mainSmoke.simulationSpeed = Mathf.Abs(movement) * speed;
             if (movement > 0) smoke.Emit(5);
+            transform.position += new Vector3(0, movement * speed * Time.deltaTime, 0);
+
+            var curY = transform.position.y;
+
+            if (curY > minY && curY < maxY) rocket.localEulerAngles += new Vector3(0, movement * speed, 0);
+            transform.position = new Vector3(0, Mathf.Clamp(curY, minY, maxY), 0);
+
+            mCamera.backgroundColor = skyColor.Evaluate(curY / maxY);
         }
-        transform.position += new Vector3(0, movement * speed * Time.deltaTime, 0);
 
-        var curY = transform.position.y;
-
-        if (curY > minY && curY < maxY) rocket.localEulerAngles += new Vector3(0, movement * speed, 0);
-        transform.position = new Vector3(0, Mathf.Clamp(curY, minY, maxY), 0);
-
-        mCamera.backgroundColor = skyColor.Evaluate(curY / maxY);
     }
+
+
+    
 }
